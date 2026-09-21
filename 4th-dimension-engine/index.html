@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4D Engine — Platform Dev Canvas</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #0a0a0f;
+        color: #e8e8f0;
+        font-family: system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #1e1e2e;
+      }
+
+      header p {
+        color: #8888aa;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+
+      .layout {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+      }
+
+      aside {
+        border-right: 1px solid #1e1e2e;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      main {
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+      }
+
+      fieldset {
+        border: 1px solid #2a2a3a;
+        border-radius: 8px;
+        padding: 0.75rem;
+      }
+
+      legend {
+        font-size: 0.75rem;
+        color: #8888aa;
+        padding: 0 0.25rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.75rem;
+        color: #8888aa;
+        margin-bottom: 0.25rem;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #2a2a3a;
+        background: #111118;
+        color: #e8e8f0;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+      }
+
+      button {
+        cursor: pointer;
+        background: #1a2a4a;
+        border-color: #2a4a7a;
+      }
+
+      button:hover {
+        background: #243660;
+      }
+
+      button.secondary {
+        background: #1a1a24;
+        border-color: #2a2a3a;
+      }
+
+      canvas {
+        width: min(960px, 100%);
+        aspect-ratio: 16 / 9;
+        border: 1px solid #2a2a3a;
+        border-radius: 8px;
+        background: #111118;
+      }
+
+      #status {
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        color: #8888aa;
+        max-width: 960px;
+      }
+
+      .hint {
+        font-size: 0.7rem;
+        color: #666680;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>4D Engine — Platform Dev Canvas</h1>
+      <p>Sprint 4 — time scrubbing · orbit camera · 4D hyperplane rotation · foveated rendering</p>
+    </header>
+    <div class="layout">
+      <aside>
+        <fieldset>
+          <legend>Platform API</legend>
+          <label for="api-url">Backend URL</label>
+          <input id="api-url" type="url" value="http://localhost:4000" />
+          <div id="auth-credentials">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="user@example.com" />
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="••••••••" />
+          </div>
+          <p id="auth-user" class="hint" hidden></p>
+          <button id="btn-login" type="button">Login</button>
+        </fieldset>
+        <fieldset>
+          <legend>4D Interaction (Sprint 4)</legend>
+          <label for="time-slider">Time (4th dimension)</label>
+          <input id="time-slider" type="range" min="0" max="5" step="0.01" value="0" />
+          <span id="time-label">0.00s / 5.00s</span>
+          <button id="btn-play" type="button">Pause</button>
+          <label for="hyper-xw">Hyperplane x-w rotation</label>
+          <input id="hyper-xw" type="range" min="0" max="6.28" step="0.01" value="0" />
+          <label for="hyper-yw">Hyperplane y-w rotation</label>
+          <input id="hyper-yw" type="range" min="0" max="6.28" step="0.01" value="0" />
+          <label for="hyper-zw">Hyperplane z-w rotation</label>
+          <input id="hyper-zw" type="range" min="0" max="6.28" step="0.01" value="0" />
+          <p class="hint">Drag canvas to orbit · scroll to zoom · foveated rendering active</p>
+        </fieldset>
+        <fieldset>
+          <legend>4D Scene</legend>
+          <label for="scene-select">Your scenes</label>
+          <select id="scene-select">
+            <option value="">— log in to list scenes —</option>
+          </select>
+          <button id="btn-load" type="button">Load from API</button>
+          <button id="btn-demo" type="button" class="secondary">Load local demo</button>
+          <p class="hint">
+            Loads 4D Gaussian primitives via GET /scenes/:id/primitives (embedded or GridFS).
+          </p>
+        </fieldset>
+        <fieldset>
+          <legend>XPBD Physics & Constraints (Sprint 7+)</legend>
+          <label><input id="chk-physics" type="checkbox" style="width: auto; display: inline;" /> Enable Physics</label>
+          <label><input id="chk-pin-top" type="checkbox" style="width: auto; display: inline;" /> Pin Top Particles</label>
+          <label><input id="chk-ground-plane" type="checkbox" checked style="width: auto; display: inline;" /> Ground Collision (-2.0)</label>
+          <button id="btn-snapshot" type="button" class="secondary">Save Snapshot to API</button>
+        </fieldset>
+      </aside>
+      <main>
+        <div>
+          <canvas id="canvas" width="960" height="540"></canvas>
+          <p id="status">Initializing…</p>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/dev/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebGL2 500k Primitive Real Render Benchmark</title>
+</head>
+<body style="background: #000; color: #fff; font-family: monospace;">
+  <h2>WebGL2 500k Primitive Real Render Benchmark</h2>
+  <canvas id="canvas" width="1280" height="720"></canvas>
+  <div id="results">Running WebGL2 context probe & 300-frame render loop...</div>
+
+  <script>
+    function runBenchmark() {
+      var resultsDiv = document.getElementById('results');
+      var canvas = document.getElementById('canvas');
+      var gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
+
+      if (!gl) {
+        resultsDiv.innerHTML = '<pre id="benchmark-output">{"status":"FAILED", "error":"WebGL2 null"}</pre>';
+        return;
+      }
+
+      var vendor = gl.getParameter(gl.VENDOR);
+      var renderer = gl.getParameter(gl.RENDERER);
+
+      var count = 500000;
+      var positions = new Float32Array(count * 4);
+      for (var i = 0; i < count * 4; i += 4) {
+        positions[i] = (Math.random() - 0.5) * 10;
+        positions[i+1] = (Math.random() - 0.5) * 10;
+        positions[i+2] = (Math.random() - 0.5) * 10;
+        positions[i+3] = Math.random();
+      }
+
+      var buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+      var frameTimes = [];
+      var totalFrames = 300;
+      var frameCount = 0;
+      var lastTime = performance.now();
+
+      function renderFrame() {
+        var now = performance.now();
+        var delta = now - lastTime;
+        lastTime = now;
+
+        if (frameCount > 0) {
+          frameTimes.push(delta);
+        }
+
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0.05, 0.05, 0.1, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        frameCount++;
+        if (frameCount < totalFrames) {
+          requestAnimationFrame(renderFrame);
+        } else {
+          frameTimes.sort(function(a, b) { return a - b; });
+          var sum = 0;
+          for (var k = 0; k < frameTimes.length; k++) { sum += frameTimes[k]; }
+          var avgFrameTime = sum / frameTimes.length;
+          var p95Index = Math.floor(frameTimes.length * 0.95);
+          var p95FrameTime = frameTimes[p95Index];
+          var avgFps = 1000 / (avgFrameTime || 1);
+          var p95Fps = 1000 / (p95FrameTime || 1);
+
+          var summary = {
+            status: "SUCCESS",
+            glVendor: String(vendor),
+            glRenderer: String(renderer),
+            primitiveCount: count,
+            totalFramesRendered: frameTimes.length,
+            avgFrameTimeMs: avgFrameTime.toFixed(2),
+            p95FrameTimeMs: p95FrameTime.toFixed(2),
+            avgFps: avgFps.toFixed(1),
+            p95Fps: p95Fps.toFixed(1)
+          };
+
+          resultsDiv.innerHTML = '<pre id="benchmark-output">' + JSON.stringify(summary) + '</pre>';
+        }
+      }
+
+      requestAnimationFrame(renderFrame);
+    }
+
+    window.onload = runBenchmark;
+  </script>
+</body>
+</html>
