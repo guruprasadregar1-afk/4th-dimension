@@ -35,6 +35,11 @@ export function defaultCovariance4D(
 /**
  * Slice a 4D Gaussian at time t.
  * Uses conditional distribution: 3D spatial | temporal = t.
+ * 
+ * Note on Numerical Safety Thresholds:
+ * 1. Import Floor (0.05): Assigned during COLMAP/static scene ingestion (seed-colmap-data.js) to set default initial temporal variance.
+ * 2. Pruning Threshold (1e-8): Pre-slicing check below to skip uninitialized, zero, or corrupt primitives before matrix operations.
+ * 3. Engine Rotation Floor (1e-3): Minimum bound on sigmaT (cov[15]) below to prevent floating-point division-by-zero or matrix inversion blowup during 4D hyperplane rotations.
  */
 export function slice4DAtTime(
   primitive: GaussianPrimitive4D,
@@ -43,11 +48,12 @@ export function slice4DAtTime(
   const [mx, my, mz, mt] = primitive.mean;
   const cov = normalizeCovariance4D(primitive.covariance);
 
-  // Engine-time numerical safety floor: epsilon (1e-3) prevents floating-point division-by-zero or matrix inversion blowup during 4D hyperplane rotations.
+  // Engine Pruning Threshold (1e-8): Prune uninitialized/corrupt primitives
   const rawSigmaT = cov[15];
   if (rawSigmaT <= 1e-8) {
     return null;
   }
+  // Engine Rotation Floor (1e-3): Inversion floor on Sigma_4,4 to prevent division-by-zero
   const sigmaT = Math.max(1e-3, rawSigmaT);
 
   const deltaT = time - mt;

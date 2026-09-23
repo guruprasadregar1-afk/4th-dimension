@@ -95,7 +95,7 @@ export class AuthService {
     }
 
     if (stored.revoked) {
-      const GRACE_PERIOD_MS = 30 * 1000; // 30-second grace period for concurrent requests
+      const GRACE_PERIOD_MS = 60 * 1000; // 60-second grace period for concurrent requests
       const isWithinGracePeriod =
         stored.revokedAt &&
         Date.now() - new Date(stored.revokedAt).getTime() < GRACE_PERIOD_MS;
@@ -103,6 +103,37 @@ export class AuthService {
       if (!isWithinGracePeriod) {
         await this.revokeTokenFamily(stored.family);
         throw new UnauthorizedException('Refresh token reuse detected');
+      }
+
+      // If within grace period, check if another concurrent request already rotated this family
+      const activeInFamily = await this.refreshTokenModel
+        .findOne({
+          family: stored.family,
+          revoked: false,
+          expiresAt: { $gt: new Date() },
+        })
+        .exec();
+
+      const user = await this.usersService.findById(stored.userId.toString());
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const accessToken = await this.signAccessToken(user.id, user.email, user.role);
+
+      if (activeInFamily) {
+        // A concurrent request already successfully rotated tokens for this family.
+        // Return a fresh access token and rotate the active token cleanly.
+        const tokens = await this.rotateRefreshToken(
+          user.id,
+          user.email,
+          user.role,
+          stored.family,
+        );
+        return {
+          user: this.usersService.toPublicUser(user),
+          ...tokens,
+        };
       }
     }
 
@@ -175,6 +206,12 @@ export class AuthService {
     const refreshToken = randomBytes(48).toString('hex');
     const expiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d');
     const expiresAt = this.parseExpiry(expiresIn);
+
+    // Revoke any previous active tokens in this family to maintain 1 active token per family
+    await this.refreshTokenModel.updateMany(
+      { family, revoked: false },
+      { $set: { revoked: true, revokedAt: new Date() } },
+    );
 
     await this.refreshTokenModel.create({
       userId: new Types.ObjectId(userId),

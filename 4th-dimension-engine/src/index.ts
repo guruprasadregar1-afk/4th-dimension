@@ -40,4 +40,20 @@ export type {
   generateOrthoplex16Geometry,
   generateCube3DGeometry,
 } from './math/polytopeGeometry';
-export type { PolytopeGeometry4D, PolytopeGeometry3D } from './math/polytopeGeometry';
+export type { PolytopeGeometry4D, PolytopeGeometry3D, PolytopeCell4D } from './math/polytopeGeometry';
+export {
+  signDistance4D,
+  intersectEdgeHyperplane,
+  slicePolytopeHyperplane,
+  classifyCrossSectionShape,
+  verifyFaceCoplanarity,
+  verifyMeshConvexity,
+  verifyMeshCongruence,
+} from './math/hyperplaneSlicer';
+export type {
+  Hyperplane4D,
+  EdgeIntersectionResult,
+  CrossSectionMesh3D,
+} from './math/hyperplaneSlicer';
+export * from './math/escapePuzzle';
+
