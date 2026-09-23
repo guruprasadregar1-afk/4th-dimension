@@ -10,6 +10,7 @@ import {
 import {
   backendGetProfile,
   backendRefresh,
+  BackendAuthError,
   type AuthTokens,
   type AuthUser,
 } from './backend';
@@ -33,7 +34,7 @@ function isAccessTokenExpired(token: string): boolean {
   try {
     const payload = decodeJwt(token);
     if (!payload.exp) return false;
-    return payload.exp * 1000 <= Date.now() + 30_000;
+    return payload.exp * 1000 <= Date.now() + 5_000;
   } catch {
     return true;
   }
@@ -68,8 +69,11 @@ export async function resolveSessionUser(): Promise<SessionResult> {
     try {
       rotatedTokens = await refreshAccessToken(refreshToken);
       accessToken = rotatedTokens.accessToken;
-    } catch {
-      return { user: null, accessToken: null, clearCookies: true };
+    } catch (err) {
+      if (err instanceof BackendAuthError && err.status === 401) {
+        return { user: null, accessToken: null, clearCookies: true };
+      }
+      return { user: null, accessToken: null };
     }
   }
 
@@ -87,11 +91,14 @@ export async function resolveSessionUser(): Promise<SessionResult> {
         accessToken = rotatedTokens.accessToken;
         const user = await backendGetProfile(accessToken);
         return { user, accessToken, rotatedTokens };
-      } catch {
-        return { user: null, accessToken: null, clearCookies: true };
+      } catch (err) {
+        if (err instanceof BackendAuthError && err.status === 401) {
+          return { user: null, accessToken: null, clearCookies: true };
+        }
+        return { user: null, accessToken: null };
       }
     }
-    return { user: null, accessToken: null, clearCookies: true };
+    return { user: null, accessToken: null };
   }
 }
 

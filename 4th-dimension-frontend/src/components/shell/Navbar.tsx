@@ -17,10 +17,22 @@ export function Navbar() {
       </Link>
 
       <nav className="flex items-center gap-3 text-sm">
+        <Link
+          href="/escape"
+          className="rounded-md px-3 py-1.5 text-xs font-semibold text-accent border border-accent/30 bg-accent/10 transition hover:bg-accent/20"
+        >
+          🎮 4D Puzzle
+        </Link>
         {isLoading ? (
           <span className="text-xs text-muted">Loading session…</span>
         ) : isAuthenticated ? (
           <>
+            <Link
+              href="/dashboard"
+              className="rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent hover:bg-surface-raised"
+            >
+              Dashboard
+            </Link>
             <span className="hidden text-muted sm:inline">{user?.email}</span>
             <button
               type="button"

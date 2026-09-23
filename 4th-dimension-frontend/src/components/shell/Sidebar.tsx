@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', hint: 'Overview' },
+  { href: '/escape', label: '🎮 Impossible Escape', hint: '4D Escape Puzzle' },
   { href: '/viewer', label: '4D Viewer', hint: 'Engine canvas' },
   { href: '/scenes', label: 'Scene Library', hint: 'Browse & import' },
   { href: '/admin', label: 'Admin Portal', hint: 'Moderation & Users' },

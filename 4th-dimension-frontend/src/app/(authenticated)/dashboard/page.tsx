@@ -16,7 +16,23 @@ export default function DashboardPage() {
         </p>
       </div>
       <DashboardStats />
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Link
+          href="/escape"
+          className="group relative overflow-hidden rounded-xl border border-accent/40 bg-gradient-to-br from-accent/15 via-surface-raised to-surface-raised p-4 transition hover:border-accent hover:shadow-lg hover:shadow-accent/5"
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
+              Start Here
+            </span>
+          </div>
+          <h2 className="mt-2 text-sm font-semibold text-foreground group-hover:text-accent">
+            🎮 The Impossible Escape
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Interactive puzzle: fail in 2D & 3D, escape using the 4th dimension!
+          </p>
+        </Link>
         <Link
           href="/scenes"
           className="rounded-xl border border-surface-border bg-surface-raised p-4 transition hover:border-accent/40"
