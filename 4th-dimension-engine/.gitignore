@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.DS_Store
+
+# Note: dist/ is explicitly NOT ignored for this standalone engine repo
+# Tagged releases (e.g. v0.1.0) include pre-built dist/ artifacts directly.

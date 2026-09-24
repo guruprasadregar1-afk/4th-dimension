@@ -43,6 +43,7 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "npm run build",
     "dev": "vite",
     "build": "vite build && tsc --emitDeclarationOnly",
     "preview": "vite preview",

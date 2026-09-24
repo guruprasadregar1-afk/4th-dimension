@@ -10,7 +10,7 @@
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\""
   },
   "dependencies": {
-    "@4th-dimension/engine": "file:../4th-dimension-engine",
+    "@4th-dimension/engine": "github:guruprasadregar1-afk/4th-dimension-engine#v0.1.0",
     "@hookform/resolvers": "^5.9.1",
     "jose": "^6.2.12",
     "next": "14.2.35",
