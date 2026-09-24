@@ -1,6 +1,6 @@
 'use client';
 
-import type { Engine4D } from '@4th-dimension/engine';
+import type { Engine4D } from '@4th-dimension/engine/renderer';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';

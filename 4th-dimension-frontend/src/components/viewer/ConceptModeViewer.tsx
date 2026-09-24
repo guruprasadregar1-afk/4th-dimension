@@ -195,7 +195,7 @@ export function ConceptModeViewer({ scene }: ConceptModeViewerProps) {
     const rotated3DPoints: Array<[number, number, number]> = [];
 
     for (const v of geometry3D.vertices) {
-      const rot = rotatePoint3D(v, 0.6 + timeAngle * 0.2, 0.35);
+      const rot = rotatePoint3D(v as [number, number, number], 0.6 + timeAngle * 0.2, 0.35);
       rotated3DPoints.push(rot);
       const scale = 140 / (cameraDistance - rot[2] * 0.4);
       projected3D.push([width / 2 + rot[0] * scale, height / 2 - rot[1] * scale]);
@@ -244,7 +244,7 @@ export function ConceptModeViewer({ scene }: ConceptModeViewerProps) {
       const projectedStatic: Array<[number, number]> = [];
 
       for (const v of staticVerts) {
-        const rot = rotatePoint3D(v, 0.6 + timeAngle * 0.2, 0.35);
+        const rot = rotatePoint3D(v as [number, number, number], 0.6 + timeAngle * 0.2, 0.35);
         const scale = 140 / (cameraDistance - rot[2] * 0.4);
         projectedStatic.push([width / 2 + rot[0] * scale, height / 2 - rot[1] * scale]);
       }
@@ -362,8 +362,8 @@ export function ConceptModeViewer({ scene }: ConceptModeViewerProps) {
           ctx4D.beginPath();
 
           for (let fIdx = 0; fIdx < face.length; fIdx++) {
-            const v4 = slicedMesh.vertices[face[fIdx]];
-            const rot3 = rotatePoint3D([v4[0], v4[1], v4[2]], 0.6, 0.35);
+            const p3d = slicedMesh.vertices3D[face[fIdx]];
+            const rot3 = rotatePoint3D(p3d, 0.6, 0.35);
             const scale = 120 / (cameraDistance - rot3[2] * 0.3);
             const sx = width / 2 + rot3[0] * scale;
             const sy = height / 2 - rot3[1] * scale;

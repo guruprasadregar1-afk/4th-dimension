@@ -246,3 +246,51 @@ export function generateCube3DGeometry(): PolytopeGeometry3D {
     edges,
   };
 }
+
+/**
+ * Asymmetric 4D Simplex (Irregular 5-cell / 4-simplex).
+ * 5 vertices: v0=(0,0,0,0), v1=(2,0,0,0), v2=(0,3,0,0), v3=(0,0,4,0), v4=(1,1,1,5)
+ * 10 edges, 5 tetrahedral cells (irregular geometry without symmetry)
+ */
+export function generateAsymmetricSimplex5Geometry(): PolytopeGeometry4D {
+  const vertices: Array<[number, number, number, number]> = [
+    [0, 0, 0, 0],
+    [2, 0, 0, 0],
+    [0, 3, 0, 0],
+    [0, 0, 4, 0],
+    [1, 1, 1, 5],
+  ];
+
+  const edges: Array<[number, number]> = [];
+  for (let i = 0; i < 5; i++) {
+    for (let j = i + 1; j < 5; j++) {
+      edges.push([i, j]);
+    }
+  }
+
+  const cells: PolytopeCell4D[] = [];
+  for (let omitIdx = 0; omitIdx < 5; omitIdx++) {
+    const cellVertices = [0, 1, 2, 3, 4].filter((idx) => idx !== omitIdx);
+    const faces: Array<number[]> = [
+      [cellVertices[0], cellVertices[1], cellVertices[2]],
+      [cellVertices[0], cellVertices[1], cellVertices[3]],
+      [cellVertices[0], cellVertices[2], cellVertices[3]],
+      [cellVertices[1], cellVertices[2], cellVertices[3]],
+    ];
+
+    cells.push({
+      name: `Tetrahedron Cell (omitting v${omitIdx})`,
+      vertices: cellVertices,
+      faces,
+    });
+  }
+
+  return {
+    name: 'Asymmetric 5-cell (Irregular 4-simplex)',
+    description: '5 vertices • 10 edges • 5 tetrahedral cells (irregular geometry)',
+    vertices,
+    edges,
+    cells,
+  };
+}
+

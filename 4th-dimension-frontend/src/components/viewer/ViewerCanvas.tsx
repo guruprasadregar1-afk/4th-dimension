@@ -1,6 +1,6 @@
 'use client';
 
-import { Engine4D } from '@4th-dimension/engine';
+import { Engine4D } from '@4th-dimension/engine/renderer';
 import { useEffect, useRef, useState } from 'react';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -32,7 +32,7 @@ export function ViewerCanvas({ sceneId, onEngineReady }: ViewerCanvasProps) {
     engineRef.current = engine;
     onEngineReady?.(engine);
 
-    engine.setOnTimeChange((time, duration) => {
+    engine.setOnTimeChange((time: number, duration: number) => {
       setTime(time);
       setDuration(duration);
     });
@@ -47,7 +47,7 @@ export function ViewerCanvas({ sceneId, onEngineReady }: ViewerCanvasProps) {
     onResize();
 
     const unsubscribe = useSceneInteractionStore.subscribe((state, prev) => {
-      if (state.time !== prev.time && Math.abs(state.time - engine.getTime()) > 0.001) {
+      if (state.time !== prev.time && Math.abs(state.time - (engine?.getTime() ?? 0)) > 0.001) {
         engine.setTime(state.time);
       }
       if (state.hyperplane !== prev.hyperplane) {

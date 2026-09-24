@@ -1,16 +1,42 @@
 {
   "name": "@4th-dimension/engine",
-  "version": "0.0.1",
-  "description": "Browser-based 4D Gaussian splatting engine for the 4D Representation Platform",
+  "version": "0.1.0",
+  "description": "Standalone zero-dependency 4D math, polytope geometry, hyperplane slicing, and physics engine",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
+    },
+    "./geometry": {
+      "types": "./dist/geometry.d.ts",
+      "import": "./dist/geometry.js",
+      "require": "./dist/geometry.cjs"
+    },
+    "./slicing": {
+      "types": "./dist/slicing.d.ts",
+      "import": "./dist/slicing.js",
+      "require": "./dist/slicing.cjs"
+    },
+    "./math": {
+      "types": "./dist/mathExport.d.ts",
+      "import": "./dist/mathExport.js",
+      "require": "./dist/mathExport.cjs"
+    },
+    "./physics": {
+      "types": "./dist/physicsExport.d.ts",
+      "import": "./dist/physicsExport.js",
+      "require": "./dist/physicsExport.cjs"
+    },
+    "./renderer": {
+      "types": "./dist/rendererExport.d.ts",
+      "import": "./dist/rendererExport.js",
+      "require": "./dist/rendererExport.cjs"
     }
   },
   "files": [
@@ -18,13 +44,14 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc --emitDeclarationOnly && vite build",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "jsdom": "^25.0.1",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "vitest": "^2.1.9"

@@ -184,17 +184,18 @@ export function slicePolytopeHyperplane(
     }
   }
 
-  // Convert 4D vertices to 3D projected vertices for mesh rendering & inspection
+  // Convert 4D vertices to 3D projected vertices using isometric chart coordinates
+  const basis = computeCanonicalHyperplaneBasis(plane);
   const vertices3D: Array<[number, number, number]> = rawIntersections.map((v4) => [
-    v4[0],
-    v4[1],
-    v4[2],
+    v4[0] * basis[0][0] + v4[1] * basis[0][1] + v4[2] * basis[0][2] + v4[3] * basis[0][3],
+    v4[0] * basis[1][0] + v4[1] * basis[1][1] + v4[2] * basis[1][2] + v4[3] * basis[1][3],
+    v4[0] * basis[2][0] + v4[1] * basis[2][1] + v4[2] * basis[2][2] + v4[3] * basis[2][3],
   ]);
 
   const vertexCount = rawIntersections.length;
   const faceCount = uniqueFaces.length;
 
-  const isConvex = verifyMeshConvexity(rawIntersections, uniqueFaces);
+  const isConvex = verifyMeshConvexity(rawIntersections, uniqueFaces, 1e-5, plane);
   const isCoplanarFaces = verifyFaceCoplanarity(rawIntersections, uniqueFaces);
   const shapeName = classifyCrossSectionShape(vertexCount, faceCount);
 
@@ -210,6 +211,100 @@ export function slicePolytopeHyperplane(
     isClosed,
     isCoplanarFaces,
   };
+}
+
+/**
+ * Computes a deterministic 3D orthonormal basis (u1, u2, u3) for the 3D hyperplane subspace
+ * orthogonal to the 4D plane normal vector n = [a, b, c, d].
+ * Uses Gram-Schmidt orthogonalization starting from global X-axis (falling back to Y)
+ * to ensure orientation continuity without arbitrary frame flips during live scrubbing.
+ */
+export function computeCanonicalHyperplaneBasis(
+  plane: Hyperplane4D,
+): [
+  [number, number, number, number],
+  [number, number, number, number],
+  [number, number, number, number],
+] {
+  const [a, b, c, d] = plane.normal;
+  const nLen = Math.hypot(a, b, c, d);
+  const n: [number, number, number, number] =
+    nLen > 1e-9 ? [a / nLen, b / nLen, c / nLen, d / nLen] : [0, 0, 0, 1];
+
+  const dot = (v1: number[], v2: number[]) =>
+    v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2] + v1[3] * v2[3];
+
+  const e1: [number, number, number, number] = [1, 0, 0, 0];
+  const e2: [number, number, number, number] = [0, 1, 0, 0];
+  const e3: [number, number, number, number] = [0, 0, 1, 0];
+  const e4: [number, number, number, number] = [0, 0, 0, 1];
+
+  // 1. u1: Project e1 onto n^perp (fallback to e2 if e1 is parallel to n)
+  let ref1 = e1;
+  let v1 = [
+    ref1[0] - dot(ref1, n) * n[0],
+    ref1[1] - dot(ref1, n) * n[1],
+    ref1[2] - dot(ref1, n) * n[2],
+    ref1[3] - dot(ref1, n) * n[3],
+  ];
+  let len1 = Math.hypot(...v1);
+  if (len1 < 1e-4) {
+    ref1 = e2;
+    v1 = [
+      ref1[0] - dot(ref1, n) * n[0],
+      ref1[1] - dot(ref1, n) * n[1],
+      ref1[2] - dot(ref1, n) * n[2],
+      ref1[3] - dot(ref1, n) * n[3],
+    ];
+    len1 = Math.hypot(...v1);
+  }
+  const u1: [number, number, number, number] = [
+    v1[0] / len1,
+    v1[1] / len1,
+    v1[2] / len1,
+    v1[3] / len1,
+  ];
+
+  // 2. u2: Project ref2 onto (n, u1)^perp
+  const candidates2 = [e2, e3, e4, e1];
+  let u2: [number, number, number, number] = [0, 0, 0, 0];
+  for (const ref2 of candidates2) {
+    const dN = dot(ref2, n);
+    const dU1 = dot(ref2, u1);
+    const v2 = [
+      ref2[0] - dN * n[0] - dU1 * u1[0],
+      ref2[1] - dN * n[1] - dU1 * u1[1],
+      ref2[2] - dN * n[2] - dU1 * u1[2],
+      ref2[3] - dN * n[3] - dU1 * u1[3],
+    ];
+    const len2 = Math.hypot(...v2);
+    if (len2 > 1e-4) {
+      u2 = [v2[0] / len2, v2[1] / len2, v2[2] / len2, v2[3] / len2];
+      break;
+    }
+  }
+
+  // 3. u3: Project ref3 onto (n, u1, u2)^perp
+  const candidates3 = [e3, e4, e2, e1];
+  let u3: [number, number, number, number] = [0, 0, 0, 0];
+  for (const ref3 of candidates3) {
+    const dN = dot(ref3, n);
+    const dU1 = dot(ref3, u1);
+    const dU2 = dot(ref3, u2);
+    const v3 = [
+      ref3[0] - dN * n[0] - dU1 * u1[0] - dU2 * u2[0],
+      ref3[1] - dN * n[1] - dU1 * u1[1] - dU2 * u2[1],
+      ref3[2] - dN * n[2] - dU1 * u1[2] - dU2 * u2[2],
+      ref3[3] - dN * n[3] - dU1 * u1[3] - dU2 * u2[3],
+    ];
+    const len3 = Math.hypot(...v3);
+    if (len3 > 1e-4) {
+      u3 = [v3[0] / len3, v3[1] / len3, v3[2] / len3, v3[3] / len3];
+      break;
+    }
+  }
+
+  return [u1, u2, u3];
 }
 
 /** Sort 2D/3D coplanar polygon vertices in cyclic counter-clockwise order around centroid */
@@ -268,14 +363,29 @@ function sortConvexPolygonVertices(
 }
 
 export function verifyMeshConvexity(
-  pts: Array<[number, number, number, number]>,
+  pts: Array<[number, number, number, number] | [number, number, number]>,
   faces: Array<number[]>,
   eps = 1e-5,
+  plane?: Hyperplane4D,
 ): boolean {
   if (pts.length <= 4) return true;
 
-  // Convert 4D points to 3D projected coordinates for 3D half-space test
-  const pts3D: Array<[number, number, number]> = pts.map((p) => [p[0], p[1], p[2]]);
+  // Convert points to 3D projected coordinates for 3D half-space test
+  let pts3D: Array<[number, number, number]>;
+  if (pts[0].length === 4) {
+    if (plane) {
+      const basis = computeCanonicalHyperplaneBasis(plane);
+      pts3D = (pts as Array<[number, number, number, number]>).map((p) => [
+        p[0] * basis[0][0] + p[1] * basis[0][1] + p[2] * basis[0][2] + p[3] * basis[0][3],
+        p[0] * basis[1][0] + p[1] * basis[1][1] + p[2] * basis[1][2] + p[3] * basis[1][3],
+        p[0] * basis[2][0] + p[1] * basis[2][1] + p[2] * basis[2][2] + p[3] * basis[2][3],
+      ]);
+    } else {
+      pts3D = (pts as Array<[number, number, number, number]>).map((p) => [p[0], p[1], p[2]]);
+    }
+  } else {
+    pts3D = pts as Array<[number, number, number]>;
+  }
 
   for (const face of faces) {
     if (face.length < 3) continue;
