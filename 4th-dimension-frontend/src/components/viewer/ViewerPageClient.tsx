@@ -159,21 +159,21 @@ export default function ViewerPageClient() {
               <option value="">— no scenes yet —</option>
             ) : (
               <>
-                {scenes.some((s) => is4dScene(s as any)) ? (
+                {scenes.some((s) => is4dScene(s as unknown as Parameters<typeof is4dScene>[0])) ? (
                   <optgroup label="✨ 4D Time-Varying Scenes (Interactive Scrubbing)">
                     {scenes
-                      .filter((s) => is4dScene(s as any))
+                      .filter((s) => is4dScene(s as unknown as Parameters<typeof is4dScene>[0]))
                       .map((scene) => (
                         <option key={scene.id} value={scene.id}>
-                          ✨ {scene.title} (4D · {sceneTimestepCount(scene as any)} timesteps) — {scene.primitiveCount} primitives
+                          ✨ {scene.title} (4D · {sceneTimestepCount(scene as unknown as Parameters<typeof sceneTimestepCount>[0])} timesteps) — {scene.primitiveCount} primitives
                         </option>
                       ))}
                   </optgroup>
                 ) : null}
-                {scenes.some((s) => !is4dScene(s as any)) ? (
+                {scenes.some((s) => !is4dScene(s as unknown as Parameters<typeof is4dScene>[0])) ? (
                   <optgroup label="📷 3D Static Reconstructions">
                     {scenes
-                      .filter((s) => !is4dScene(s as any))
+                      .filter((s) => !is4dScene(s as unknown as Parameters<typeof is4dScene>[0]))
                       .map((scene) => (
                         <option key={scene.id} value={scene.id}>
                           📷 {scene.title} (3D · Static) — {scene.primitiveCount} primitives
@@ -229,11 +229,10 @@ export default function ViewerPageClient() {
 
 function ViewerModeSelector({
   currentMode,
-  is4D,
   onModeChange,
 }: {
   currentMode: 'concept' | 'splat';
-  is4D: boolean;
+  is4D?: boolean;
   onModeChange: (mode: 'concept' | 'splat') => void;
 }) {
   return (

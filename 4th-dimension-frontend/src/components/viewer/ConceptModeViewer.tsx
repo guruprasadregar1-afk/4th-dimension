@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  classifyCrossSectionShape,
   generateCube3DGeometry,
   generateOrthoplex16Geometry,
   generateSimplex5Geometry,
@@ -42,7 +41,7 @@ export function ConceptModeViewer({ scene }: ConceptModeViewerProps) {
     faceCount: number;
   }>({ shapeName: 'Tetrahedron', vertexCount: 4, faceCount: 4 });
 
-  const isStaticScene = scene ? !is4dScene(scene as any) : false;
+  const isStaticScene = scene ? !is4dScene(scene as unknown as Parameters<typeof is4dScene>[0]) : false;
 
   const [sceneBounds, setSceneBounds] = useState<{
     wireframeVertices: Array<[number, number, number]>;

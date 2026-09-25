@@ -38,7 +38,7 @@ export async function withServerSession<T>(
   | { ok: true; data: T; session: SessionResult }
   | { ok: false; status: number; error: string; session: SessionResult }
 > {
-  let session = await resolveSessionUser();
+  const session = await resolveSessionUser();
   if (!session.accessToken) {
     return {
       ok: false,
