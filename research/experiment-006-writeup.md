@@ -15,7 +15,7 @@ We validate the slicing engine across two analytical reference cases:
 1. **Case 1 (Axis-Aligned Hyperplane $H_1: w = 2.5$)**: Intersects at linear parameter $t = 0.5$, yielding an asymmetric tetrahedron of exact 3D volume $V_{3D} = \mathbf{0.500000}$.
 2. **Case 2 (Oblique Hyperplane $H_2: x + y + z + w = 2.0$)**: All four hyperplane normal coefficients are non-zero. Slicing yields 4 intersection points whose 3D chart distances and enclosed volume ($V_{3D} = \mathbf{5/3 \approx 1.666667}$) match true 4D Euclidean metric ground truth without orthographic length compression.
 
-All empirical results match hand-derived analytical ground truth within floating-point tolerance ($\le 10^{-6}$), while satisfying 3D convex half-space enclosure, $2$-manifold watertight closure, and frame-to-frame basis orientation continuity ($\max \|\Delta u_m\| = 0.08854 < 0.10$).
+All empirical results match hand-derived analytical ground truth within floating-point tolerance ($\le 10^{-6}$), while satisfying 3D convex half-space enclosure, $2$-manifold watertight closure, and frame-to-frame basis orientation continuity ($\max \|\Delta u_m\| = 0.08854 < 0.10$). The continuity threshold $0.10$ represents an empirically-validated tolerance derived across smooth normal sweeps ($\Delta \theta \approx 0.06283$ rad) with a large safety margin below discrete frame-flip jumps ($\approx 1.4142$).
 
 ---
 
@@ -53,6 +53,23 @@ For an arbitrary 3D hyperplane defined by normal $\hat{\mathbf{n}} = [a,b,c,d]^T
 
 3. **Tertiary Vector $u_3$**: Project candidate global reference vector onto $(\hat{\mathbf{n}}, u_1, u_2)^\perp$:
    $$v_3 = e_3 - (e_3 \cdot \hat{\mathbf{n}}) \hat{\mathbf{n}} - (e_3 \cdot u_1) u_1 - (e_3 \cdot u_2) u_2, \quad u_3 = \frac{v_3}{\|v_3\|}$$
+
+#### Frame Continuity & Derivative Analysis
+Let $\hat{\mathbf{n}}(t)$ be a smoothly rotating unit normal ($\|\hat{\mathbf{n}}(t)\| = 1 \implies \hat{\mathbf{n}} \cdot \dot{\mathbf{n}} = 0$). Differentiating $u_1(t) = v_1(t) / \|v_1(t)\|$ with respect to parameter $t$ proceeds via the following intermediate steps:
+
+1. Differentiate $v_1(t) = e_1 - (e_1 \cdot \hat{\mathbf{n}})\hat{\mathbf{n}}$ using constant $\dot{e}_1 = 0$:
+   $$\dot{v}_1(t) = - (e_1 \cdot \dot{\mathbf{n}}) \hat{\mathbf{n}} - (e_1 \cdot \hat{\mathbf{n}}) \dot{\mathbf{n}}$$
+
+2. Differentiate norm $\|v_1(t)\| = \sqrt{v_1 \cdot v_1} = \sin\theta(t)$, where $\theta$ is the angle between $e_1$ and $\hat{\mathbf{n}}$:
+   $$\frac{d\|v_1\|}{dt} = \frac{v_1 \cdot \dot{v}_1}{\|v_1\|} = u_1 \cdot \dot{v}_1$$
+
+3. Apply product rule to $u_1 = \frac{v_1}{\|v_1\|}$:
+   $$\dot{u}_1 = \frac{\dot{v}_1}{\|v_1\|} - \frac{v_1}{\|v_1\|^2} \frac{d\|v_1\|}{dt} = \frac{1}{\|v_1\|} \left( \dot{v}_1 - (u_1 \cdot \dot{v}_1) u_1 \right) = \frac{1}{\|v_1\|} (I - u_1 u_1^T) \dot{v}_1$$
+
+4. Substitute $\dot{v}_1$ and note that $u_1 \perp \hat{\mathbf{n}} \implies (I - u_1 u_1^T) \hat{\mathbf{n}} = \hat{\mathbf{n}}$:
+   $$\dot{u}_1(t) = \frac{1}{\sin\theta(t)} \left( - (e_1 \cdot \dot{\mathbf{n}}) \hat{\mathbf{n}} - \cos\theta(t) (I - u_1 u_1^T) \dot{\mathbf{n}} \right)$$
+
+As $\theta \to 0$, $\sin\theta \to 0$, causing $\|du_1/dt\|$ to scale as $1/\sin\theta$ near axis alignment, while fallback transitions introduce step jumps of up to $\sqrt{2} \approx 1.4142$. Hence, the continuity threshold $0.10$ is evaluated as an **empirically-validated tolerance** for discrete step sweeps ($\Delta \theta \approx 0.06283$ rad) rather than a universal theoretical bound.
 
 ### 1.3 Volume Evaluation via Cayley-Menger Determinant
 For 4 3D chart vertices $P_0, P_1, P_2, P_3$, the enclosed 3D volume is computed directly via vector scalar triple product:
@@ -93,7 +110,7 @@ Hyperplane separates $v_0$ from $\{v_1, v_2, v_3, v_4\}$, yielding 4 intersectio
 **Ground Truth Metric Validation**:
 - True 4D Edge Lengths: $\|Q_0 Q_1\|_{4D} = \|Q_0 Q_2\|_{4D} = \|Q_1 Q_2\|_{4D} = \sqrt{8} \approx 2.8284271$, $\|Q_0 Q_3\|_{4D} = \|Q_1 Q_3\|_{4D} = \|Q_2 Q_3\|_{4D} = \sqrt{4.75} \approx 2.1794495$.
 - Orthonormal 3D Chart Distances: Match 4D edge lengths exactly within $\le 10^{-6}$.
-- Analytical Volume: $\det(B_{Cayley-Menger}) = 800 \implies V_{3D} = \sqrt{800/288} = \mathbf{5/3 \approx 1.666667}$.
+- Analytical Volume: $\det(B_{\text{Cayley-Menger}}) = 800 \implies V_{3D} = \sqrt{800/288} = \mathbf{5/3 \approx 1.666667}$.
 
 ---
 
@@ -119,7 +136,7 @@ The execution harness (`experiments/006-irregular-polytope-slicing/run.ts`) eval
 
 ### 4.2 Citation & Differentiation
 - **Citation**: Hyperplane slicing of $N$-dimensional polyhedra is a classic solved problem in computational geometry (Barber et al., 1996; CGAL $d\text{D}$ Kernel). We make **no claim** of inventing a new slicing algorithm.
-- **Differentiation**: Generic C++ libraries like CGAL and Qhull are offline, heavy external tools. Our implementation ([`hyperplaneSlicer.ts`](../../4th-dimension-engine/src/math/hyperplaneSlicer.ts)) is a zero-dependency, lightweight TypeScript module executing real-time 4D boundary slicing and WebGL chart rendering directly in browser runtime environments at 60 FPS.
+- **Differentiation**: Generic C++ libraries like CGAL and Qhull are offline, heavy external tools. Our implementation ([`hyperplaneSlicer.ts`](../4th-dimension-engine/src/math/hyperplaneSlicer.ts)) is a zero-dependency, lightweight TypeScript module executing real-time 4D boundary slicing and WebGL chart rendering directly in browser runtime environments at 60 FPS.
 
 ---
 

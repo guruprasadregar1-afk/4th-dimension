@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  generate24CellGeometry,
   generateCube3DGeometry,
   generateOrthoplex16Geometry,
   generateSimplex5Geometry,
@@ -14,7 +15,7 @@ import { fetchBff } from '@/lib/client-fetch';
 import { useSceneInteractionStore } from '@/stores/sceneInteractionStore';
 import { is4dScene, type SceneListItem } from '@/types/scene';
 
-type PolytopeType = 'tesseract' | 'simplex5' | 'orthoplex16' | 'scene_wireframe';
+type PolytopeType = 'tesseract' | 'simplex5' | 'orthoplex16' | 'cell24' | 'scene_wireframe';
 
 interface ConceptModeViewerProps {
   scene?: SceneListItem;
@@ -160,6 +161,8 @@ export function ConceptModeViewer({ scene }: ConceptModeViewerProps) {
       geometry4D = generateSimplex5Geometry();
     } else if (activePolytope === 'orthoplex16') {
       geometry4D = generateOrthoplex16Geometry();
+    } else if (activePolytope === 'cell24') {
+      geometry4D = generate24CellGeometry();
     } else {
       geometry4D = generateTesseractGeometry();
     }
@@ -440,6 +443,17 @@ export function ConceptModeViewer({ scene }: ConceptModeViewerProps) {
             }`}
           >
             16-Cell (4-orthoplex)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePolytope('cell24')}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              activePolytope === 'cell24'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            24-Cell (icositetrachoron)
           </button>
           {isStaticScene ? (
             <button

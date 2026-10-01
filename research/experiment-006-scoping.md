@@ -143,13 +143,13 @@ Asserting zero discontinuous $90^\circ / 180^\circ$ orientation flips or basis s
 - **Citation**: Hyperplane slicing of $N$-dimensional polyhedra is a classic solved problem in computational geometry (Barber et al., 1996; CGAL $d\text{D}$ Kernel). We make **no claim** of inventing a new mathematical slicing algorithm or outperforming offline C++ libraries like CGAL or Qhull.
 - **Differentiation**:
   - CGAL and Qhull are generic, heavy C++ libraries designed for offline $N$-dimensional spatial computing.
-  - Our implementation ([`hyperplaneSlicer.ts`](file:///d:/4th%20dimension/4th-dimension-engine/src/math/hyperplaneSlicer.ts)) is a zero-dependency, lightweight TypeScript module executing real-time 4D boundary slicing and WebGL rendering directly in browser runtime environments.
+  - Our implementation ([`hyperplaneSlicer.ts`](../4th-dimension-engine/src/math/hyperplaneSlicer.ts)) is a zero-dependency, lightweight TypeScript module executing real-time 4D boundary slicing and WebGL rendering directly in browser runtime environments.
 
 ---
 
 ## 5. Exact Falsifiable Claim
 
-> **Claim**: The cell-based 4D hyperplane slicing algorithm ([`hyperplaneSlicer.ts`](file:///d:/4th%20dimension/4th-dimension-engine/src/math/hyperplaneSlicer.ts)), when evaluated on an asymmetric 4-simplex across both coordinate ($w = 2.5$) and oblique ($x + y + z + w = 2.0$) hyperplanes, computes exact 3D cross-sectional meshes whose 3D isometric chart coordinates, true 4D edge lengths, face topology ($4$ triangular faces), and 3D volumes ($0.500000$ for Case 1 and $\frac{5}{3} \approx 1.666667$ for Case 2) match hand-derived analytical ground truth within floating-point tolerance ($\le 10^{-6}$), while satisfying 3D convex half-space enclosure, $2$-manifold watertight closure, and frame-to-frame basis orientation continuity.
+> **Claim**: The cell-based 4D hyperplane slicing algorithm ([`hyperplaneSlicer.ts`](../4th-dimension-engine/src/math/hyperplaneSlicer.ts)), when evaluated on an asymmetric 4-simplex across both coordinate ($w = 2.5$) and oblique ($x + y + z + w = 2.0$) hyperplanes, computes exact 3D cross-sectional meshes whose 3D isometric chart coordinates, true 4D edge lengths, face topology ($4$ triangular faces), and 3D volumes ($0.500000$ for Case 1 and $\frac{5}{3} \approx 1.666667$ for Case 2) match hand-derived analytical ground truth within floating-point tolerance ($\le 10^{-6}$), while satisfying 3D convex half-space enclosure, $2$-manifold watertight closure, and frame-to-frame basis orientation continuity.
 
 ---
 

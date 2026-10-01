@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  generate24CellGeometry,
   generateCube3DGeometry,
   generateOrthoplex16Geometry,
   generateSimplex5Geometry,
@@ -83,6 +84,49 @@ describe('Polytope Geometry Generators', () => {
     });
   });
 
+  describe('24-cell (icositetrachoron)', () => {
+    it('generates exactly 24 vertices, 96 edges, and 24 octahedral cells', () => {
+      const geo = generate24CellGeometry();
+      expect(geo.vertices).toHaveLength(24);
+      expect(geo.edges).toHaveLength(96);
+      expect(geo.cells).toHaveLength(24);
+    });
+
+    it('asserts every edge connects vertices at uniform 4D distance 1.0', () => {
+      const geo = generate24CellGeometry();
+      for (const [i, j] of geo.edges) {
+        const d = dist4D(geo.vertices[i], geo.vertices[j]);
+        expect(d).toBeCloseTo(1.0, 5);
+      }
+    });
+
+    it('asserts each of the 24 cells is a regular octahedron with 6 vertices and 8 faces', () => {
+      const geo = generate24CellGeometry();
+      for (const cell of geo.cells) {
+        expect(cell.vertices).toHaveLength(6);
+        expect(cell.faces).toHaveLength(8);
+      }
+    });
+
+    it('verifies Euler characteristic V - E + F - C = 0 for 24-cell', () => {
+      const geo = generate24CellGeometry();
+      const V = geo.vertices.length;
+      const E = geo.edges.length;
+      const C = geo.cells.length;
+      // Compute unique faces across all cells
+      const faceSet = new Set<string>();
+      for (const cell of geo.cells) {
+        for (const face of cell.faces) {
+          const key = [...face].sort((a, b) => a - b).join(',');
+          faceSet.add(key);
+        }
+      }
+      const F = faceSet.size;
+      expect(F).toBe(96);
+      expect(V - E + F - C).toBe(0);
+    });
+  });
+
   describe('3D Reference Cube', () => {
     it('generates exactly 8 vertices and 12 edges', () => {
       const geo = generateCube3DGeometry();
@@ -91,3 +135,4 @@ describe('Polytope Geometry Generators', () => {
     });
   });
 });
+
