@@ -11,6 +11,7 @@
     "experiment:005": "npx tsx experiments/005-hyperplane-mesh-slicing/run.ts",
     "experiment:006": "npx tsx experiments/006-irregular-polytope-slicing/run.ts",
     "experiment:007": "npx tsx experiments/007-24cell-slicing/run.ts",
-    "experiment:all": "npm run experiment:001 && npm run experiment:002 && npm run experiment:003 && npm run experiment:004 && npm run experiment:005 && npm run experiment:006 && npm run experiment:007"
+    "experiment:008": "npx tsx experiments/008-compact-extra-dimension-force-law/run.ts",
+    "experiment:all": "npm run experiment:001 && npm run experiment:002 && npm run experiment:003 && npm run experiment:004 && npm run experiment:005 && npm run experiment:006 && npm run experiment:007 && npm run experiment:008"
   }
 }
