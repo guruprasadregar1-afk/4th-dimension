@@ -8,10 +8,6 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   transpilePackages: ['@4th-dimension/engine'],
   webpack: (config, { isServer }) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@4th-dimension/engine$': path.resolve(__dirname, '../4th-dimension-engine/dist/index.js'),
-    };
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
