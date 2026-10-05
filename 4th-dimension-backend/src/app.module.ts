@@ -15,6 +15,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { EventsModule } from './events/events.module';
 import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports/imports.module';
+import { PublicSliceModule } from './public-slice/public-slice.module';
 import { ScenesModule } from './scenes/scenes.module';
 
 @Module({
@@ -34,6 +35,11 @@ import { ScenesModule } from './scenes/scenes.module';
           ttl: config.get<number>('THROTTLE_AUTH_TTL_MS', 60_000),
           limit: config.get<number>('THROTTLE_AUTH_LIMIT', 10),
         },
+        {
+          name: 'public',
+          ttl: config.get<number>('THROTTLE_PUBLIC_TTL_MS', 60_000),
+          limit: config.get<number>('THROTTLE_PUBLIC_LIMIT', 20),
+        },
       ],
     }),
     MongooseModule.forRootAsync({
@@ -52,6 +58,7 @@ import { ScenesModule } from './scenes/scenes.module';
     EventsModule,
     AnalyticsModule,
     AdminModule,
+    PublicSliceModule,
   ],
   controllers: [AppController],
   providers: [
