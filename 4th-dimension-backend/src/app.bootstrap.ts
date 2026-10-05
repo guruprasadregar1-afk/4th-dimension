@@ -10,20 +10,11 @@ export function configureApp(app: INestApplication): void {
   const config = app.get(ConfigService);
 
   app.use(helmet());
-  // Scoped open CORS middleware for unauthenticated public endpoints (e.g. Python notebooks / Colab)
-  app.use('/api/public', (req: any, res: any, next: any) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(204);
-    }
-    next();
-  });
-
-  // Strict CORS policy for authenticated routes protecting cookies & credentials
   app.enableCors({
-    origin: config.get<string>('CORS_ORIGIN', 'http://localhost:5173'),
+    origin: (_origin, callback) => {
+      // Allow any incoming request origin (including Colab, Jupyter, local dev, and Vercel frontend)
+      callback(null, true);
+    },
     credentials: true,
   });
 
