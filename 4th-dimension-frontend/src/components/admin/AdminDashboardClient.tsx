@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fetchBff } from '@/lib/client-fetch';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
@@ -29,7 +29,7 @@ export function AdminDashboardClient() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadAdminData() {
+  const loadAdminData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,11 +49,11 @@ export function AdminDashboardClient() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [activeTab]);
 
   useEffect(() => {
     void loadAdminData();
-  }, [activeTab]);
+  }, [loadAdminData]);
 
   async function toggleUserSuspension(user: UserRecord) {
     try {
