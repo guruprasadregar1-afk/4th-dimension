@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  generate24CellGeometry,
   generateCube3DGeometry,
   generateOrthoplex16Geometry,
   generateSimplex5Geometry,
@@ -10,6 +9,7 @@ import {
   type Hyperplane4D,
   type PolytopeGeometry4D,
 } from '@4th-dimension/engine';
+import { generate24CellGeometry } from '@/lib/polytope24Cell';
 import { useEffect, useRef, useState } from 'react';
 import { fetchBff } from '@/lib/client-fetch';
 import { useSceneInteractionStore } from '@/stores/sceneInteractionStore';
